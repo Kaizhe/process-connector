@@ -7,15 +7,15 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"os"
+	"syscall"
+
 	"github.com/kaizhe/proc-connector/pkg/types"
 	"golang.org/x/sys/unix"
-	"os"
 )
 
 type ProcessConnector struct {
-
 }
-
 
 func NewProcessConnector() *ProcessConnector {
 	return &ProcessConnector{}

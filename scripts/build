@@ -9,4 +9,4 @@ go get "golang.org/x/tools/cmd/goimports"
 
 goimports -w $(find . -type f -name '*.go' -not -path "./vendor/*") || true
 
-env GO111MODULE=on GOOS=linux GOARCH=amd64 go build -a
+env GO111MODULE=on GOOS=linux GOARCH=amd64 go build -a -o process-connector
