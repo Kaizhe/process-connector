@@ -32,8 +32,7 @@ func (pc *ProcessConnector) Listen() error {
 	err = unix.Bind(sock, addr)
 
 	if err != nil {
-		fmt.Printf("bind: %v\n", err)
-		return
+		return err
 	}
 
 	defer func() {
