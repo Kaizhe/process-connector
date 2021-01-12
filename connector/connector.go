@@ -74,7 +74,7 @@ func parseNetlinkMessage(m syscall.NetlinkMessage) {
 		binary.Read(buf, binary.LittleEndian, hdr)
 
 		if hdr.What == C.PROC_EVENT_EXIT {
-			event := &ProcExitEvent{}
+			event := &types.ProcExitEvent{}
 			binary.Read(buf, binary.LittleEndian, event)
 			pid := int(event.ProcessTgid)
 			fmt.Printf("%d just exited.\n", pid)
