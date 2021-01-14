@@ -1,5 +1,9 @@
 package types
 
+const (
+	Host = "host"
+)
+
 type Message struct {
 	PID       uint32
 	Timestamp uint64
@@ -18,8 +22,12 @@ func (m *Message) IsEmpty() bool {
 
 type EnrichedMessage struct {
 	Message
-	ProcessName string
-	Image       string
-	ImageSHA    string
-	ContainerID string
+	ProcessName  string
+	Image        string
+	ImageSHA     string
+	ContainerID  string
+	HostUID      string
+	ContainerUID string
+	HostGID      string
+	ContainerGID string
 }
