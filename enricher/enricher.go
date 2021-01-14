@@ -142,7 +142,7 @@ func ignoreError(err error) {
 
 func readFromProcFile(pid uint32, fileName string) (c string, err error) {
 	pidStr := strconv.FormatUint(uint64(pid), 10)
-	file := fmt.Sprintf("/proc/%s/cpuset", pidStr)
+	file := fmt.Sprintf("/proc/%s/%s", pidStr, fileName)
 
 	content, err := ioutil.ReadFile(file)
 
