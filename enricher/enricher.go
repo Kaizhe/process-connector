@@ -24,7 +24,7 @@ func (e *Enricher) getCmdline(pid uint32) (cmdline string, err error) {
 		return
 	}
 
-	cmdline = strings.TrimSpace(strings.Join(strings.Split(c, "golang\000"), " "))
+	cmdline = replaceNullCharacter(c)
 
 	return
 }
@@ -96,8 +96,8 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			containerID, err := e.getContainerID(pid)
 			ignoreError(err)
 
-			// skip host process
-			if containerID == types.Host {
+			// skip host process or the process exited and no container info is available
+			if containerID == types.Host || containerID == "" {
 				continue
 			}
 
@@ -153,4 +153,19 @@ func readFromProcFile(pid uint32, fileName string) (c string, err error) {
 	c = strings.TrimSpace(string(content))
 
 	return
+}
+
+func replaceNullCharacter(c string) string {
+	list := []byte(c)
+	newList := []byte{}
+
+	for _, b := range list {
+		if b == 0 {
+			newList = append(newList, 32)
+		} else {
+			newList = append(newList, b)
+		}
+	}
+
+	return string(newList)
 }
