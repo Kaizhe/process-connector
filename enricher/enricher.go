@@ -2,14 +2,14 @@ package enricher
 
 import (
 	"fmt"
-	"github.com/kaizhe/proc-connector/pkg/types"
 	"io/ioutil"
 	"strconv"
 	"strings"
+
+	"github.com/kaizhe/proc-connector/pkg/types"
 )
 
 type Enricher struct {
-
 }
 
 func NewEnricher() *Enricher {
@@ -56,7 +56,6 @@ func (e *Enricher) getContainerID(pid uint32) (containerID string, err error) {
 	return
 }
 
-
 func (e *Enricher) getImage(containerID string) (imageName, imageSHA string, err error) {
 	return
 }
@@ -64,7 +63,7 @@ func (e *Enricher) getImage(containerID string) (imageName, imageSHA string, err
 func (e *Enricher) Enrich(input <-chan *types.Message) {
 	for {
 		select {
-		case msg := <- input:
+		case msg := <-input:
 			var err error
 			pid := msg.PID
 			ts := msg.Timestamp
@@ -99,4 +98,3 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 		}
 	}
 }
-

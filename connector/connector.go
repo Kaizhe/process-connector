@@ -58,7 +58,7 @@ func (pc *ProcessConnector) Listen(msgChan chan<- *types.Message) error {
 
 		for _, m := range nlmessages {
 			msg := parseNetlinkMessage(m)
-			if msg !=nil && !msg.IsEmpty() {
+			if msg != nil && !msg.IsEmpty() {
 				msgChan <- msg
 			}
 		}
