@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	messageChan := make(chan types.Message, 1)
+	messageChan := make(chan *types.Message, 1)
 
 	pc := connector.NewProcessConnector()
 

@@ -21,7 +21,7 @@ func NewProcessConnector() *ProcessConnector {
 	return &ProcessConnector{}
 }
 
-func (pc *ProcessConnector) Listen(msgChan chan<- types.Message) error {
+func (pc *ProcessConnector) Listen(msgChan chan<- *types.Message) error {
 	sock, err := unix.Socket(unix.AF_NETLINK, unix.SOCK_DGRAM, unix.NETLINK_CONNECTOR)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (pc *ProcessConnector) Listen(msgChan chan<- types.Message) error {
 
 		for _, m := range nlmessages {
 			msg := parseNetlinkMessage(m)
-			if !msg.IsEmpty() {
+			if msg !=nil && !msg.IsEmpty() {
 				msgChan <- msg
 			}
 		}
@@ -67,7 +67,7 @@ func (pc *ProcessConnector) Listen(msgChan chan<- types.Message) error {
 	return nil
 }
 
-func parseNetlinkMessage(m syscall.NetlinkMessage) types.Message {
+func parseNetlinkMessage(m syscall.NetlinkMessage) *types.Message {
 	if m.Header.Type == unix.NLMSG_DONE {
 		buf := bytes.NewBuffer(m.Data)
 		msg := &types.CnMsg{}
@@ -88,6 +88,7 @@ func parseNetlinkMessage(m syscall.NetlinkMessage) types.Message {
 			return types.NewMessage(event.ProcessPid, hdr.Timestamp)
 		}
 	}
+	return nil
 }
 
 func send(sock int, msg uint32) error {

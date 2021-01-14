@@ -58,7 +58,7 @@ func (e *Enricher) getImage(containerID string) (imageName, imageSHA string, err
 	return
 }
 
-func (e *Enricher) Enrich(input <-chan types.Message) (enrichedMessage types.EnrichedMessage, err error)  {
+func (e *Enricher) Enrich(input <-chan *types.Message) (enrichedMessage types.EnrichedMessage, err error)  {
 	msg := <- input
 	pid := msg.PID
 	ts := msg.Timestamp
