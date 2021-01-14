@@ -16,7 +16,7 @@ func NewEnricher() *Enricher {
 	return &Enricher{}
 }
 
-func (e *Enricher) getCmdline(pid uint32) (processName string, err error) {
+func (e *Enricher) getCmdline(pid uint32) (cmdline string, err error) {
 	cmdFile := fmt.Sprintf("/proc/%s/cmdline", strconv.FormatUint(uint64(pid), 10))
 
 	content, err := ioutil.ReadFile(cmdFile)
@@ -25,7 +25,7 @@ func (e *Enricher) getCmdline(pid uint32) (processName string, err error) {
 		return
 	}
 
-	processName = strings.Join(strings.Split(string(content), "golang\000"), " ")
+	cmdline = strings.TrimSpace(strings.Join(strings.Split(string(content), "golang\000"), " "))
 
 	return
 }
@@ -40,8 +40,9 @@ func (e *Enricher) getContainerID(pid uint32) (containerID string, err error) {
 		return
 	}
 
-	// CPU set associate with root
 	c := strings.TrimSpace(string(content))
+
+	// CPU set associate with root
 	fmt.Println("cpuset: ", c)
 	if c == "/" {
 		containerID = "host"
@@ -49,7 +50,7 @@ func (e *Enricher) getContainerID(pid uint32) (containerID string, err error) {
 	}
 
 	// CPU set associate with container
-	list := strings.Split(string(content), "/")
+	list := strings.Split(c, "/")
 	containerID = list[len(list)-1]
 
 	return
@@ -60,7 +61,7 @@ func (e *Enricher) getImage(containerID string) (imageName, imageSHA string, err
 	return
 }
 
-func (e *Enricher) Enrich(input <-chan *types.Message) error  {
+func (e *Enricher) Enrich(input <-chan *types.Message) {
 	for {
 		select {
 		case msg := <- input:
@@ -72,21 +73,18 @@ func (e *Enricher) Enrich(input <-chan *types.Message) error  {
 
 			if err != nil {
 				fmt.Println(err)
-				return err
 			}
 
 			containerID, err := e.getContainerID(pid)
 
 			if err != nil {
 				fmt.Println(err)
-				return err
 			}
 
 			imageName, imageSHA, err := e.getImage(containerID)
 
 			if err != nil {
 				fmt.Println(err)
-				return err
 			}
 
 			var eMsg types.EnrichedMessage
