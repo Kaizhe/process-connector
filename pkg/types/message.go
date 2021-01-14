@@ -30,4 +30,5 @@ type EnrichedMessage struct {
 	ContainerUID string
 	HostGID      string
 	ContainerGID string
+	Exe          string
 }

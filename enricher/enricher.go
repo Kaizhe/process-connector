@@ -3,6 +3,7 @@ package enricher
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 
@@ -17,15 +18,13 @@ func NewEnricher() *Enricher {
 }
 
 func (e *Enricher) getCmdline(pid uint32) (cmdline string, err error) {
-	cmdFile := fmt.Sprintf("/proc/%s/cmdline", strconv.FormatUint(uint64(pid), 10))
-
-	content, err := ioutil.ReadFile(cmdFile)
+	c, err := readFromProcFile(pid, "cmdline")
 
 	if err != nil {
 		return
 	}
 
-	cmdline = strings.TrimSpace(strings.Join(strings.Split(string(content), "golang\000"), " "))
+	cmdline = strings.TrimSpace(strings.Join(strings.Split(c, "golang\000"), " "))
 
 	return
 }
@@ -39,16 +38,13 @@ func (e *Enricher) getGIDs(pid uint32) (hostGID, containerGID string, err error)
 }
 
 func (e *Enricher) getUserNamespaceInfo(pid uint32, mapFile string) (host, container string, err error) {
-	pidStr := strconv.FormatUint(uint64(pid), 10)
-	file := fmt.Sprintf("/proc/%s/%s", pidStr, mapFile)
-
-	content, err := ioutil.ReadFile(file)
+	c, err := readFromProcFile(pid, mapFile)
 
 	if err != nil {
 		return
 	}
 
-	list := strings.Fields(strings.TrimSpace(string(content)))
+	list := strings.Fields(c)
 
 	host = list[0]
 	container = list[1]
@@ -56,17 +52,20 @@ func (e *Enricher) getUserNamespaceInfo(pid uint32, mapFile string) (host, conta
 	return
 }
 
-func (e *Enricher) getContainerID(pid uint32) (containerID string, err error) {
+func (e *Enricher) readExe(pid uint32) (exe string, err error) {
 	pidStr := strconv.FormatUint(uint64(pid), 10)
-	file := fmt.Sprintf("/proc/%s/cpuset", pidStr)
+	file := fmt.Sprintf("/proc/%s/exe", pidStr)
 
-	content, err := ioutil.ReadFile(file)
+	exe, err = os.Readlink(file)
+	return
+}
+
+func (e *Enricher) getContainerID(pid uint32) (containerID string, err error) {
+	c, err := readFromProcFile(pid, "cpuset")
 
 	if err != nil {
 		return
 	}
-
-	c := strings.TrimSpace(string(content))
 
 	// CPU set associate with root
 	fmt.Println("cpuset: ", c)
@@ -95,10 +94,7 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			ts := msg.Timestamp
 
 			containerID, err := e.getContainerID(pid)
-
-			if err != nil {
-				fmt.Println(err)
-			}
+			ignoreError(err)
 
 			// skip host process
 			if containerID == types.Host {
@@ -106,28 +102,19 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			}
 
 			process, err := e.getCmdline(pid)
-
-			if err != nil {
-				fmt.Println(err)
-			}
+			ignoreError(err)
 
 			imageName, imageSHA, err := e.getImage(containerID)
-
-			if err != nil {
-				fmt.Println(err)
-			}
+			ignoreError(err)
 
 			hostUID, containerUID, err := e.getUIDs(pid)
-
-			if err != nil {
-				return
-			}
+			ignoreError(err)
 
 			hostGID, containerGID, err := e.getUIDs(pid)
+			ignoreError(err)
 
-			if err != nil {
-				return
-			}
+			exe, err := e.readExe(pid)
+			ignoreError(err)
 
 			var eMsg types.EnrichedMessage
 			eMsg.Timestamp = ts
@@ -140,8 +127,30 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			eMsg.ContainerUID = containerUID
 			eMsg.HostGID = hostGID
 			eMsg.ContainerGID = containerGID
+			eMsg.Exe = exe
 
-			fmt.Println(eMsg)
+			fmt.Printf("%+v\n", eMsg)
 		}
 	}
+}
+
+func ignoreError(err error) {
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func readFromProcFile(pid uint32, fileName string) (c string, err error) {
+	pidStr := strconv.FormatUint(uint64(pid), 10)
+	file := fmt.Sprintf("/proc/%s/cpuset", pidStr)
+
+	content, err := ioutil.ReadFile(file)
+
+	if err != nil {
+		return
+	}
+
+	c = strings.TrimSpace(string(content))
+
+	return
 }
