@@ -60,10 +60,11 @@ func (e *Enricher) getImage(containerID string) (imageName, imageSHA string, err
 	return
 }
 
-func (e *Enricher) Enrich(input <-chan *types.Message) (err error)  {
+func (e *Enricher) Enrich(input <-chan *types.Message) error  {
 	for {
 		select {
 		case msg := <- input:
+			var err error
 			pid := msg.PID
 			ts := msg.Timestamp
 
@@ -71,21 +72,21 @@ func (e *Enricher) Enrich(input <-chan *types.Message) (err error)  {
 
 			if err != nil {
 				fmt.Println(err)
-				return
+				return err
 			}
 
 			containerID, err := e.getContainerID(pid)
 
 			if err != nil {
 				fmt.Println(err)
-				return
+				return err
 			}
 
 			imageName, imageSHA, err := e.getImage(containerID)
 
 			if err != nil {
 				fmt.Println(err)
-				return
+				return err
 			}
 
 			var eMsg types.EnrichedMessage
