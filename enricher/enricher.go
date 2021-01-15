@@ -105,7 +105,7 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			process, err := e.getCmdline(pid)
 			ignoreError(err)
 
-			container, err := e.getImage(containerID)
+			exe, err := e.readExe(pid)
 			ignoreError(err)
 
 			hostUID, containerUID, err := e.getUIDs(pid)
@@ -114,7 +114,7 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			hostGID, containerGID, err := e.getUIDs(pid)
 			ignoreError(err)
 
-			exe, err := e.readExe(pid)
+			container, err := e.getImage(containerID)
 			ignoreError(err)
 
 			var eMsg types.EnrichedMessage
@@ -122,7 +122,7 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			eMsg.PID = pid
 			eMsg.ProcessName = process
 			eMsg.ContainerID = containerID
-			eMsg.ImageSHA = container.Image
+			eMsg.ImageSHA = extraImageSHA(container.Image)
 			eMsg.Image = container.Config.ImageName
 			eMsg.HostUID = hostUID
 			eMsg.ContainerUID = containerUID
@@ -183,4 +183,12 @@ func replaceNullCharacter(c string) string {
 	}
 
 	return string(newList)
+}
+
+func extraImageSHA(input string) string {
+	if strings.HasPrefix(input, "sha256:") {
+		return input[7:]
+	}
+
+	return input
 }
