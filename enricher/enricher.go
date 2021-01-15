@@ -1,6 +1,7 @@
 package enricher
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -81,8 +82,8 @@ func (e *Enricher) getContainerID(pid uint32) (containerID string, err error) {
 	return
 }
 
-func (e *Enricher) getImage(containerID string) (imageName, imageSHA string, err error) {
-	return
+func (e *Enricher) getImage(containerID string) (containerInfo types.Container, err error) {
+	return readFromDocker(containerID)
 }
 
 func (e *Enricher) Enrich(input <-chan *types.Message) {
@@ -104,7 +105,7 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			process, err := e.getCmdline(pid)
 			ignoreError(err)
 
-			imageName, imageSHA, err := e.getImage(containerID)
+			container, err := e.getImage(containerID)
 			ignoreError(err)
 
 			hostUID, containerUID, err := e.getUIDs(pid)
@@ -121,8 +122,8 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			eMsg.PID = pid
 			eMsg.ProcessName = process
 			eMsg.ContainerID = containerID
-			eMsg.ImageSHA = imageSHA
-			eMsg.Image = imageName
+			eMsg.ImageSHA = container.Image
+			eMsg.Image = container.Config.ImageName
 			eMsg.HostUID = hostUID
 			eMsg.ContainerUID = containerUID
 			eMsg.HostGID = hostGID
@@ -151,6 +152,20 @@ func readFromProcFile(pid uint32, fileName string) (c string, err error) {
 	}
 
 	c = strings.TrimSpace(string(content))
+
+	return
+}
+
+func readFromDocker(containerID string) (c types.Container, err error) {
+	file := fmt.Sprintf("/var/lib/docker/containers/%s/config.v2.json", containerID)
+
+	content, err := ioutil.ReadFile(file)
+
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(content, &c)
 
 	return
 }
