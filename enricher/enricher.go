@@ -69,7 +69,6 @@ func (e *Enricher) getContainerID(pid uint32) (containerID string, err error) {
 	}
 
 	// CPU set associate with root
-	fmt.Println("cpuset: ", c)
 	if c == "/" {
 		containerID = types.Host
 		return
@@ -84,6 +83,25 @@ func (e *Enricher) getContainerID(pid uint32) (containerID string, err error) {
 
 func (e *Enricher) getImage(containerID string) (containerInfo types.Container, err error) {
 	return readFromDocker(containerID)
+}
+
+func (e *Enricher) getPWD(pid uint32) (pwd string, err error) {
+	c, err := readFromProcFile(pid, "environ")
+
+	if err != nil {
+		return
+	}
+
+	envList := strings.Split(replaceNullCharacter(c), " ")
+
+	for _, env := range envList {
+		if strings.HasPrefix(env, "PWD=") {
+			pwd = env[4:]
+			return
+		}
+	}
+
+	return
 }
 
 func (e *Enricher) Enrich(input <-chan *types.Message) {
@@ -108,10 +126,13 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			exe, err := e.readExe(pid)
 			ignoreError(err)
 
-			hostUID, containerUID, err := e.getUIDs(pid)
-			ignoreError(err)
+			//hostUID, containerUID, err := e.getUIDs(pid)
+			//ignoreError(err)
+			//
+			//hostGID, containerGID, err := e.getUIDs(pid)
+			//ignoreError(err)
 
-			hostGID, containerGID, err := e.getUIDs(pid)
+			pwd, err := e.getPWD(pid)
 			ignoreError(err)
 
 			container, err := e.getImage(containerID)
@@ -124,11 +145,12 @@ func (e *Enricher) Enrich(input <-chan *types.Message) {
 			eMsg.ContainerID = containerID
 			eMsg.ImageSHA = extraImageSHA(container.Image)
 			eMsg.Image = container.Config.ImageName
-			eMsg.HostUID = hostUID
-			eMsg.ContainerUID = containerUID
-			eMsg.HostGID = hostGID
-			eMsg.ContainerGID = containerGID
+			//eMsg.HostUID = hostUID
+			//eMsg.ContainerUID = containerUID
+			//eMsg.HostGID = hostGID
+			//eMsg.ContainerGID = containerGID
 			eMsg.Exe = exe
+			eMsg.PWD = pwd
 
 			fmt.Printf("%+v\n", eMsg)
 		}

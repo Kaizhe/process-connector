@@ -76,15 +76,15 @@ func parseNetlinkMessage(m syscall.NetlinkMessage) *types.Message {
 		binary.Read(buf, binary.LittleEndian, hdr)
 
 		if hdr.What == C.PROC_EVENT_EXIT {
-			event := &types.ProcExitEvent{}
-			binary.Read(buf, binary.LittleEndian, event)
-			pid := int(event.ProcessTgid)
-			fmt.Printf("%d just exited.\n", pid)
+			//event := &types.ProcExitEvent{}
+			//binary.Read(buf, binary.LittleEndian, event)
+			//pid := int(event.ProcessTgid)
+			//fmt.Printf("%d just exited.\n", pid)
 		} else if hdr.What == C.PROC_EVENT_EXEC {
 			event := &types.ProcExecEvent{}
 			binary.Read(buf, binary.LittleEndian, event)
-			pid := int(event.ProcessTgid)
-			fmt.Printf("%d just started.\n", pid)
+			//pid := int(event.ProcessTgid)
+			//fmt.Printf("%d just started.\n", pid)
 			return types.NewMessage(event.ProcessPid, hdr.Timestamp)
 		}
 	}

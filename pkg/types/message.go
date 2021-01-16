@@ -26,9 +26,10 @@ type EnrichedMessage struct {
 	Image        string
 	ImageSHA     string
 	ContainerID  string
-	HostUID      string
-	ContainerUID string
-	HostGID      string
-	ContainerGID string
+	//HostUID      string
+	//ContainerUID string
+	//HostGID      string
+	//ContainerGID string
 	Exe          string
+	PWD          string
 }
