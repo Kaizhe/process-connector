@@ -143,7 +143,7 @@ func ignoreError(err error) {
 
 func readFromProcFile(pid uint32, fileName string) (c string, err error) {
 	pidStr := strconv.FormatUint(uint64(pid), 10)
-	file := fmt.Sprintf("/proc/%s/%s", pidStr, fileName)
+	file := fmt.Sprintf("/host/proc/%s/%s", pidStr, fileName)
 
 	content, err := ioutil.ReadFile(file)
 
@@ -157,7 +157,7 @@ func readFromProcFile(pid uint32, fileName string) (c string, err error) {
 }
 
 func readFromDocker(containerID string) (c types.Container, err error) {
-	file := fmt.Sprintf("/var/lib/docker/containers/%s/config.v2.json", containerID)
+	file := fmt.Sprintf("/host/containers/%s/config.v2.json", containerID)
 
 	content, err := ioutil.ReadFile(file)
 
