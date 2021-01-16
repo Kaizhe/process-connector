@@ -20,4 +20,4 @@ push-image:
 	docker push ${IMG}:latest
 docker-run:
 	@echo "+ $@"
-	docker run --rm -v /proc:/host/proc:ro -v /var/lib/docker/containers:/host/containers --net host --cap-add net_admin kaizheh/process-connector:${VERSION}
+	docker run --rm -v /proc:/host/proc:ro -v /var/lib/docker/containers:/host/containers:ro --net host --cap-add net_admin kaizheh/process-connector:${VERSION}
