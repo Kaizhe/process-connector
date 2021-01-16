@@ -55,7 +55,7 @@ func (e *Enricher) getUserNamespaceInfo(pid uint32, mapFile string) (host, conta
 
 func (e *Enricher) readExe(pid uint32) (exe string, err error) {
 	pidStr := strconv.FormatUint(uint64(pid), 10)
-	file := fmt.Sprintf("/proc/%s/exe", pidStr)
+	file := fmt.Sprintf("/host/proc/%s/exe", pidStr)
 
 	exe, err = os.Readlink(file)
 	return
