@@ -9,3 +9,9 @@ A lightweight process connector agent to emit process execution information enri
 - Enrich with container information (container ID, image name etc.)
 
 - Emit enriched information
+
+## TODO List
+
+- Add MD5 value
+
+- Add K8s related information from kubelet
